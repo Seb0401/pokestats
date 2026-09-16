@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/client";
 import { TYPE_ES, fold } from "@/lib/format";
 import type { Category, Pokemon } from "@/lib/types";
+import { SearchIcon } from "./icons";
 import { PokemonTile } from "./PokemonCard";
 import { Alert, Spinner } from "./ui";
 
@@ -59,21 +60,25 @@ export function PokemonPicker({
   }
 
   if (error) return <Alert>{error}</Alert>;
-  if (!pool) return <Spinner label="Cargando candidatos…" />;
+  if (!pool) return <Spinner label="Consultando la Pokédex…" />;
 
   const visible = results.slice(0, limit);
 
   return (
     <div className="grid gap-3">
       <div className="flex flex-wrap items-center gap-2">
-        <input
-          className="field flex-1 min-w-48"
-          placeholder={`Buscar entre ${pool.length} candidatos…`}
-          value={query}
-          onChange={(e) => { setQuery(e.target.value); setLimit(PAGE); }}
-          disabled={disabled}
-        />
-        <span className="text-xs text-ink-400 tabular-nums">
+        <label className="relative min-w-48 flex-1">
+          <SearchIcon size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-screen-300" />
+          <input
+            className="field pl-9"
+            placeholder={`Buscar por nombre, número o tipo entre ${pool.length}…`}
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setLimit(PAGE); }}
+            disabled={disabled}
+            aria-label="Buscar Pokémon"
+          />
+        </label>
+        <span className="rounded-md bg-black/30 px-2 py-1 text-xs font-bold text-screen-300 tabular-nums">
           {results.length} resultado{results.length === 1 ? "" : "s"}
         </span>
       </div>
@@ -84,7 +89,7 @@ export function PokemonPicker({
         </p>
       ) : (
         <>
-          <div className="grid max-h-[26rem] grid-cols-3 gap-2 overflow-y-auto pr-1 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+          <div className="grid max-h-[28rem] grid-cols-3 gap-2 overflow-y-auto p-1 pr-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
             {visible.map((p) => (
               <PokemonTile
                 key={p.slug}
@@ -95,11 +100,7 @@ export function PokemonPicker({
             ))}
           </div>
           {limit < results.length && (
-            <button
-              type="button"
-              className="btn btn-ghost w-full"
-              onClick={() => setLimit((l) => l + PAGE)}
-            >
+            <button type="button" className="btn btn-ghost w-full" onClick={() => setLimit((l) => l + PAGE)}>
               Ver {Math.min(PAGE, results.length - limit)} más
             </button>
           )}

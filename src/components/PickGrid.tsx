@@ -1,112 +1,108 @@
 "use client";
 
 import { iconUrl } from "@/lib/format";
-import type { GameState, Pokemon } from "@/lib/types";
-import { ScorePill } from "./ui";
+import type { GameState, RevealedPick } from "@/lib/types";
+import { hasScore } from "@/lib/types";
+import { BotIcon, CategoryIcon, DiceIcon, LockIcon } from "./icons";
 
 /**
- * Cuadro de doble entrada: una fila por categoría, una columna por jugador.
- * Las celdas de categorías todavía no reveladas aparecen tapadas, salvo la
- * propia, que el jugador siempre ve.
+ * Cuadro de doble entrada: una fila por categoría y una columna por entrenador.
+ * Las celdas de categorías sin revelar aparecen tapadas, salvo la propia.
  */
-export function PickGrid({
-  state, highlight,
-}: {
-  state: GameState;
-  /** Slugs de categoría a resaltar (las sorteadas para la batalla). */
-  highlight?: string[];
-}) {
+export function PickGrid({ state }: { state: GameState }) {
   const { players, rounds, picks, me } = state;
-  const marked = new Set(highlight ?? []);
 
   if (players.length === 0) {
-    return <p className="py-6 text-center text-sm text-ink-400">Aún no hay jugadores.</p>;
+    return <p className="py-6 text-center text-sm text-ink-400">Aún no hay entrenadores.</p>;
   }
 
-  const byCatPlayer = new Map<string, Pokemon>();
+  const cell = new Map<string, RevealedPick>();
   for (const [slug, list] of Object.entries(picks)) {
-    for (const entry of list) byCatPlayer.set(`${slug}|${entry.player_id}`, entry.pokemon);
+    for (const entry of list) cell.set(`${slug}|${entry.player_id}`, entry);
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto rounded-xl">
       <table className="w-full border-separate border-spacing-0 text-sm">
         <thead>
           <tr>
-            <th className="sticky left-0 z-10 min-w-44 bg-ink-950/95 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-ink-400 backdrop-blur">
+            <th className="sticky left-0 z-10 min-w-40 bg-screen-900 px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wider text-screen-300">
               Categoría
             </th>
-            {players.map((pl) => (
-              <th
-                key={pl.id}
-                className={`min-w-28 px-2 py-2 text-center text-xs font-semibold
-                  ${pl.id === me?.id ? "text-volt-400" : "text-ink-300"}`}
-              >
-                <span className="block truncate">{pl.nickname}</span>
-                {pl.id === me?.id && <span className="text-[10px] font-normal text-ink-400">tú</span>}
-              </th>
-            ))}
+            {players.map((pl) => {
+              const mine = pl.id === me?.id;
+              return (
+                <th key={pl.id} className="min-w-24 px-1.5 py-2 text-center align-bottom">
+                  <span
+                    className={`mx-auto flex max-w-28 items-center justify-center gap-1 rounded-md px-1.5 py-1 text-xs font-bold
+                      ${mine ? "bg-volt-500/20 text-volt-400" : pl.is_bot ? "text-lens-300" : "text-ink-200"}`}
+                  >
+                    {pl.is_bot && <BotIcon size={12} className="shrink-0" />}
+                    <span className="truncate">{pl.nickname}</span>
+                  </span>
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
           {rounds.map((r) => {
             const active = state.room.phase === "picking" && r.position === state.room.current_position;
-            const isMarked = marked.has(r.category.slug);
             return (
               <tr key={r.category.slug}>
                 <th
                   scope="row"
-                  className={`sticky left-0 z-10 border-t border-ink-800 bg-ink-950/95 px-3 py-2 text-left align-middle backdrop-blur
-                    ${isMarked ? "text-volt-400" : active ? "text-ink-200" : "text-ink-300"}`}
+                  className={`sticky left-0 z-10 border-t border-white/5 bg-screen-900 px-3 py-2 text-left align-middle
+                    ${active ? "text-volt-400" : "text-ink-200"}`}
                 >
-                  <span className="flex items-center gap-2 font-medium">
-                    <span aria-hidden>{r.category.emoji}</span>
-                    <span className="truncate text-xs">{r.category.name}</span>
-                    {isMarked && (
-                      <span className="rounded bg-volt-500/20 px-1.5 py-0.5 text-[9px] font-bold uppercase text-volt-400">
-                        batalla
-                      </span>
-                    )}
-                    {active && (
-                      <span className="size-1.5 shrink-0 rounded-full bg-volt-500 pulse" aria-label="en curso" />
-                    )}
+                  <span className="flex items-center gap-2">
+                    <CategoryIcon slug={r.category.slug} size={15} className="shrink-0 text-volt-400" />
+                    <span className="truncate text-xs font-bold">{r.category.name}</span>
+                    {active && <span className="glow size-2 shrink-0 rounded-full bg-volt-500" aria-label="en curso" />}
                   </span>
                 </th>
 
                 {players.map((pl) => {
-                  const mon = byCatPlayer.get(`${r.category.slug}|${pl.id}`);
+                  const entry = cell.get(`${r.category.slug}|${pl.id}`);
                   const mine = pl.id === me?.id;
                   return (
-                    <td
-                      key={pl.id}
-                      className={`border-t border-ink-800 px-1 py-1.5 text-center
-                        ${isMarked ? "bg-volt-500/[0.06]" : ""}`}
-                    >
-                      {mon ? (
+                    <td key={pl.id} className="border-t border-white/5 px-1 py-1.5 text-center">
+                      {entry ? (
                         <span
-                          className={`inline-flex flex-col items-center gap-0.5 rounded-lg px-1 py-1
+                          className={`relative inline-flex flex-col items-center gap-0.5 rounded-lg px-1 py-1
                             ${mine ? "bg-volt-500/10 ring-1 ring-volt-500/30" : ""}`}
-                          title={`${mon.name} · puntaje ${Number(mon.battle_score).toFixed(1)}`}
+                          title={
+                            entry.pokemon.name +
+                            (entry.random ? " (sorteado)" : "") +
+                            (hasScore(entry.pokemon) ? ` · ${Number(entry.pokemon.battle_score).toFixed(1)}` : "")
+                          }
                         >
+                          {entry.random && (
+                            <span className="absolute -right-0.5 -top-0.5 rounded bg-ink-800 p-0.5 text-ink-300">
+                              <DiceIcon size={10} strokeWidth={2.5} />
+                            </span>
+                          )}
                           <img
-                            src={iconUrl(mon)}
-                            alt={mon.name}
+                            src={iconUrl(entry.pokemon)}
+                            alt={entry.pokemon.name}
                             loading="lazy"
                             width={48}
                             height={48}
                             className="size-10 object-contain [image-rendering:pixelated]"
                           />
-                          <span className="max-w-24 truncate text-[10px] text-ink-300">{mon.name}</span>
+                          <span className="max-w-24 truncate text-[10px] font-semibold text-ink-300">
+                            {entry.pokemon.name}
+                          </span>
                         </span>
                       ) : r.state === "revealed" ? (
                         <span className="text-xs text-ink-600">—</span>
                       ) : (
                         <span
-                          className="inline-block rounded-lg bg-ink-800 px-3 py-3 text-base"
+                          className="inline-flex size-11 items-center justify-center rounded-lg bg-black/25 text-ink-600"
                           aria-label="Elección oculta"
                           title="Se revela cuando el anfitrión cierre la categoría"
                         >
-                          🔒
+                          <LockIcon size={16} />
                         </span>
                       )}
                     </td>
@@ -118,47 +114,5 @@ export function PickGrid({
         </tbody>
       </table>
     </div>
-  );
-}
-
-/** Tabla de posiciones acumulada. */
-export function Leaderboard({ state }: { state: GameState }) {
-  if (!state.leaderboard.length) return null;
-  const top = state.leaderboard[0]?.total ?? 0;
-
-  return (
-    <ol className="grid gap-1.5">
-      {state.leaderboard.map((row, i) => {
-        const mine = row.player_id === state.me?.id;
-        return (
-          <li
-            key={row.player_id}
-            className={`card flex items-center gap-3 px-3 py-2 ${mine ? "border-volt-500/50" : ""}`}
-          >
-            <span
-              className={`flex size-7 shrink-0 items-center justify-center rounded-lg text-sm font-bold
-                ${i === 0 ? "bg-volt-500 text-ink-950" : "bg-ink-800 text-ink-300"}`}
-            >
-              {i + 1}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate font-semibold text-ink-200">{row.nickname}</span>
-              <span className="mt-1 block h-1 rounded-full bg-ink-800">
-                <span
-                  className="block h-full rounded-full bg-gradient-to-r from-aqua-500 to-volt-500"
-                  style={{ width: top > 0 ? `${(row.total / top) * 100}%` : "0%" }}
-                />
-              </span>
-            </span>
-            <span className="shrink-0 text-right">
-              <ScorePill value={row.total} size="sm" />
-              <span className="mt-0.5 block text-[10px] text-ink-400">
-                {row.wins} ronda{row.wins === 1 ? "" : "s"}
-              </span>
-            </span>
-          </li>
-        );
-      })}
-    </ol>
   );
 }

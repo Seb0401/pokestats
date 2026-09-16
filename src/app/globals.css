@@ -1,31 +1,53 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink-950: #0a0b12;
-  --color-ink-900: #11131f;
-  --color-ink-850: #171a29;
-  --color-ink-800: #1e2233;
-  --color-ink-700: #2b3048;
-  --color-ink-600: #3d4463;
-  --color-ink-400: #7c8399;
-  --color-ink-300: #a4abbd;
-  --color-ink-200: #cdd2df;
+  /* Neutros: texto y superficies */
+  --color-ink-950: #0b0c11;
+  --color-ink-900: #12141b;
+  --color-ink-850: #181a23;
+  --color-ink-800: #20232e;
+  --color-ink-700: #2d313f;
+  --color-ink-600: #434859;
+  --color-ink-400: #858b9e;
+  --color-ink-300: #adb2c2;
+  --color-ink-200: #dde0e8;
+  --color-ink-100: #f4f1ea;
 
-  --color-volt-400: #ffd84d;
-  --color-volt-500: #ffc400;
-  --color-volt-600: #e0a800;
+  /* Carcasa de la Pokédex */
+  --color-dex-300: #ff7a88;
+  --color-dex-400: #ef4459;
+  --color-dex-500: #dc2640;
+  --color-dex-600: #b81d34;
+  --color-dex-700: #8c1528;
+  --color-dex-800: #5e0e1b;
+
+  /* Pantalla */
+  --color-screen-900: #0c1519;
+  --color-screen-800: #112027;
+  --color-screen-700: #183039;
+  --color-screen-500: #2b5663;
+  --color-screen-300: #7fd1c7;
+
+  /* Amarillo Pokédex */
+  --color-volt-300: #ffe27a;
+  --color-volt-400: #ffd640;
+  --color-volt-500: #ffcb05;
+  --color-volt-600: #d9a900;
+
+  /* Lente y acentos */
+  --color-lens-300: #9ad8ff;
+  --color-lens-500: #2f9bea;
+  --color-lens-700: #135c9c;
 
   --color-flare-400: #ff6b6b;
   --color-flare-500: #ef4444;
-
-  --color-aqua-400: #4cc9f0;
+  --color-aqua-400: #5fd3f3;
   --color-aqua-500: #22a7d8;
-
-  --color-mint-400: #4ade80;
+  --color-mint-400: #5ee394;
   --color-mint-500: #22c55e;
 
-  --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
-  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
+  --font-body: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
@@ -33,120 +55,300 @@
 }
 
 body {
-  background:
-    radial-gradient(1100px 600px at 12% -8%, rgba(255, 196, 0, 0.09), transparent 60%),
-    radial-gradient(900px 520px at 92% 4%, rgba(76, 201, 240, 0.09), transparent 62%),
-    var(--color-ink-950);
+  background-color: var(--color-ink-950);
+  background-image:
+    radial-gradient(900px 520px at 8% -10%, rgba(220, 38, 64, 0.22), transparent 60%),
+    radial-gradient(800px 480px at 100% 0%, rgba(47, 155, 234, 0.14), transparent 60%),
+    radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: auto, auto, 22px 22px;
   color: var(--color-ink-200);
   font-family: var(--font-body);
   min-height: 100dvh;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, .font-display {
   font-family: var(--font-display);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
-/* Tipos elementales: se usan como fondo de etiqueta y como acento de tarjeta. */
+/* Tipos elementales: color de etiqueta y de acento. */
 @layer utilities {
-  .type-normal   { --type: #9fa19f; }
-  .type-fire     { --type: #e8590c; }
-  .type-water    { --type: #3b82f6; }
-  .type-electric { --type: #eab308; }
-  .type-grass    { --type: #16a34a; }
-  .type-ice      { --type: #38bdf8; }
-  .type-fighting { --type: #b91c1c; }
-  .type-poison   { --type: #9333ea; }
-  .type-ground   { --type: #b45309; }
-  .type-flying   { --type: #818cf8; }
-  .type-psychic  { --type: #ec4899; }
-  .type-bug      { --type: #65a30d; }
-  .type-rock     { --type: #a16207; }
-  .type-ghost    { --type: #6d28d9; }
-  .type-dragon   { --type: #4f46e5; }
-  .type-dark     { --type: #44403c; }
-  .type-steel    { --type: #64748b; }
-  .type-fairy    { --type: #f472b6; }
+  .type-normal   { --type: #a8a77a; }
+  .type-fire     { --type: #ee8130; }
+  .type-water    { --type: #6390f0; }
+  .type-electric { --type: #f7d02c; }
+  .type-grass    { --type: #7ac74c; }
+  .type-ice      { --type: #96d9d6; }
+  .type-fighting { --type: #c22e28; }
+  .type-poison   { --type: #a33ea1; }
+  .type-ground   { --type: #e2bf65; }
+  .type-flying   { --type: #a98ff3; }
+  .type-psychic  { --type: #f95587; }
+  .type-bug      { --type: #a6b91a; }
+  .type-rock     { --type: #b6a136; }
+  .type-ghost    { --type: #735797; }
+  .type-dragon   { --type: #6f35fc; }
+  .type-dark     { --type: #705746; }
+  .type-steel    { --type: #b7b7ce; }
+  .type-fairy    { --type: #d685ad; }
 }
 
-.card {
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
-  border: 1px solid var(--color-ink-700);
-  border-radius: 1rem;
+/* ---------------------------------------------------------------------------
+   Carcasa de la Pokédex
+   --------------------------------------------------------------------------- */
+
+.dex {
+  position: relative;
+  border-radius: 1.75rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 28%),
+    linear-gradient(160deg, var(--color-dex-500), var(--color-dex-600) 60%, var(--color-dex-700));
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -6px 0 rgba(0, 0, 0, 0.25),
+    0 24px 60px -20px rgba(220, 38, 64, 0.45),
+    0 10px 30px -10px rgba(0, 0, 0, 0.7);
 }
+
+/* Bisagra lateral de la tapa, solo decorativa. */
+.dex::after {
+  content: "";
+  position: absolute;
+  top: 5.5rem;
+  bottom: 2rem;
+  right: -6px;
+  width: 6px;
+  border-radius: 0 6px 6px 0;
+  background: linear-gradient(90deg, var(--color-dex-800), var(--color-dex-600));
+}
+
+/* Lente principal con reflejo. */
+.lens {
+  position: relative;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, var(--color-lens-300), var(--color-lens-500) 45%, var(--color-lens-700));
+  box-shadow:
+    0 0 0 4px #f4f1ea,
+    0 0 0 7px #1b1d26,
+    0 0 22px rgba(47, 155, 234, 0.7);
+}
+.lens::after {
+  content: "";
+  position: absolute;
+  top: 18%;
+  left: 22%;
+  width: 30%;
+  height: 22%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  transform: rotate(-30deg);
+}
+
+.led {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  box-shadow: inset -1px -2px 0 rgba(0, 0, 0, 0.35), 0 0 0 2px #1b1d26;
+}
+.led-red    { background: #ff4d5e; }
+.led-yellow { background: #ffd640; }
+.led-green  { background: #5ee394; }
+.led-blink  { animation: blink 2.4s infinite; }
+
+/* Bisel oscuro que rodea cada pantalla. */
+.bezel {
+  border-radius: 1.1rem;
+  padding: 0.55rem;
+  background: linear-gradient(180deg, #2b2f3b, #1b1d26);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* Pantalla con lineas de barrido sutiles. */
+.screen {
+  position: relative;
+  border-radius: 0.75rem;
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px),
+    linear-gradient(170deg, var(--color-screen-800), var(--color-screen-900));
+  box-shadow: inset 0 0 0 1px rgba(127, 209, 199, 0.12), inset 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Tarjeta clara sobre pantalla. */
+.panel {
+  border-radius: 0.9rem;
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015));
+  border: 1px solid rgba(127, 209, 199, 0.14);
+}
+
+/* Rejilla de altavoz. */
+.grill {
+  display: grid;
+  gap: 4px;
+}
+.grill > i {
+  display: block;
+  height: 3px;
+  border-radius: 99px;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* ---------------------------------------------------------------------------
+   Controles
+   --------------------------------------------------------------------------- */
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border-radius: 0.75rem;
+  border-radius: 0.8rem;
+  font-family: var(--font-display);
   font-weight: 600;
-  padding: 0.65rem 1.15rem;
-  transition: transform 0.12s ease, filter 0.12s ease, background-color 0.12s ease;
+  letter-spacing: 0.01em;
+  padding: 0.7rem 1.15rem;
+  transition: transform 0.08s ease, filter 0.12s ease, box-shadow 0.08s ease;
   cursor: pointer;
+  user-select: none;
 }
-.btn:active:not(:disabled) { transform: translateY(1px); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-.btn-primary { background: var(--color-volt-500); color: #1a1500; }
-.btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
-
-.btn-ghost {
-  background: var(--color-ink-800);
-  color: var(--color-ink-200);
-  border: 1px solid var(--color-ink-700);
+/* Teclas con relieve: bajan al pulsar. */
+.btn-primary {
+  background: linear-gradient(180deg, var(--color-volt-400), var(--color-volt-500));
+  color: #2a2000;
+  box-shadow: 0 4px 0 var(--color-volt-600), 0 6px 14px -4px rgba(255, 203, 5, 0.45);
 }
-.btn-ghost:hover:not(:disabled) { background: var(--color-ink-700); }
-
-.btn-danger { background: var(--color-flare-500); color: #fff; }
-.btn-danger:hover:not(:disabled) { filter: brightness(1.08); }
+.btn-ghost {
+  background: linear-gradient(180deg, #353a4a, #262a36);
+  color: var(--color-ink-200);
+  box-shadow: 0 4px 0 #14161d;
+}
+.btn-danger {
+  background: linear-gradient(180deg, var(--color-dex-400), var(--color-dex-500));
+  color: #fff;
+  box-shadow: 0 4px 0 var(--color-dex-700);
+}
+.btn-lens {
+  background: linear-gradient(180deg, #4fb0f2, var(--color-lens-500));
+  color: #03182b;
+  box-shadow: 0 4px 0 var(--color-lens-700);
+}
+.btn:hover:not(:disabled) { filter: brightness(1.07); }
+.btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4); }
+.btn:focus-visible { outline: 3px solid var(--color-lens-300); outline-offset: 3px; }
 
 .field {
   width: 100%;
-  background: var(--color-ink-900);
-  border: 1px solid var(--color-ink-700);
+  background: var(--color-screen-900);
+  border: 1px solid rgba(127, 209, 199, 0.2);
   border-radius: 0.75rem;
   padding: 0.7rem 0.9rem;
-  color: var(--color-ink-200);
+  color: var(--color-ink-100);
   outline: none;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 .field:focus { border-color: var(--color-volt-500); }
 .field::placeholder { color: var(--color-ink-400); }
 
-/* Barra de progreso de una estadistica base. */
 .statbar {
-  height: 0.4rem;
+  height: 0.45rem;
   border-radius: 999px;
-  background: var(--color-ink-800);
+  background: rgba(0, 0, 0, 0.35);
   overflow: hidden;
 }
 .statbar > i {
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--color-aqua-500), var(--color-volt-500));
+  background: linear-gradient(90deg, var(--color-screen-300), var(--color-volt-500));
 }
+
+/* Etiqueta pequeña con esquinas cortadas, estilo placa de la Pokédex. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 0.45rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Titulo de seccion con linea decorativa. */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-screen-300);
+}
+.eyebrow::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(127, 209, 199, 0.35), transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   Animaciones
+   --------------------------------------------------------------------------- */
 
 @keyframes rise {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: none; }
 }
-.rise { animation: rise 0.32s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+.rise { animation: rise 0.35s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
 
-@keyframes pulse-ring {
-  0%   { box-shadow: 0 0 0 0 rgba(255, 196, 0, 0.45); }
-  70%  { box-shadow: 0 0 0 14px rgba(255, 196, 0, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 196, 0, 0); }
+@keyframes pop {
+  0%   { opacity: 0; transform: scale(0.4) translateY(12px); }
+  70%  { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: none; }
 }
-.pulse { animation: pulse-ring 1.8s infinite; }
+.pop { animation: pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+
+@keyframes shake {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-14deg); }
+  40% { transform: rotate(12deg); }
+  60% { transform: rotate(-8deg); }
+  80% { transform: rotate(5deg); }
+}
+.shake { animation: shake 0.9s ease-in-out infinite; transform-origin: 50% 80%; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; }
+
+@keyframes blink {
+  0%, 92%, 100% { opacity: 1; }
+  95% { opacity: 0.25; }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 203, 5, 0.55); }
+  50%      { box-shadow: 0 0 0 10px rgba(255, 203, 5, 0); }
+}
+.glow { animation: glow 1.8s infinite; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+.float { animation: float 3.2s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise, .pulse { animation: none; }
+  .rise, .pop, .shake, .spin, .glow, .float, .led-blink { animation: none; }
 }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--color-ink-700); border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: var(--color-ink-600); }
+::-webkit-scrollbar-thumb { background: var(--color-screen-700); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-screen-500); }
