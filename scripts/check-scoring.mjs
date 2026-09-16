@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { CATEGORIES } from "./categories.mjs";
+import { CATEGORIES, markCanonical } from "./categories.mjs";
 
 const sql = fs.readFileSync("supabase/seed.sql", "utf8");
 const lines = sql.split("\n");
@@ -30,6 +30,7 @@ const mons = rows.map((l) => {
   return o;
 });
 
+markCanonical(mons);
 console.log(`Parseados ${mons.length} pokemon del seed.\n`);
 const bad = mons.filter((m) => !Number.isFinite(m.score) || m.score < 0 || m.score > 100);
 console.log(bad.length ? `!! ${bad.length} puntajes fuera de rango` : "Todos los puntajes en [0,100].");

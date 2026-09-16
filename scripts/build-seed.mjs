@@ -9,7 +9,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { CATEGORIES } from "./categories.mjs";
+import { CATEGORIES, markCanonical } from "./categories.mjs";
 import {
   blendUsage, usageToScore, statComponents, statScore,
   eligibilityFactor, buildUsageEstimator, finalScore,
@@ -292,7 +292,7 @@ function buildSql(mons, categories, members) {
 
 /** Lee el CSV y devuelve todo lo que va a la base, ya puntuado. */
 export async function buildData() {
-  const mons = parseCsv(fs.readFileSync(CSV, "utf8")).map(normalize);
+  const mons = markCanonical(parseCsv(fs.readFileSync(CSV, "utf8")).map(normalize));
   console.log("Leidos " + mons.length + " registros.");
 
   const ids = await resolveSpriteIds(mons.map((p) => ({ slug: p.slug, dex: p.dex })));

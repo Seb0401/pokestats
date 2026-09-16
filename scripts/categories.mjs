@@ -29,6 +29,28 @@ const TYPES = [
   ["poison", "Veneno", "\u2620\uFE0F"], ["flying", "Volador", "\u{1FAB6}"], ["normal", "Normal", "\u{1F43E}"],
 ];
 
+/**
+ * Marca la forma canonica de cada numero de Pokedex: la que no lleva sufijo si
+ * existe, o si no la primera que lista el CSV, que es la forma por defecto
+ * (tornadus-incarnate, urshifu-single, ogerpon-teal, ho-oh...). Muta y devuelve
+ * el arreglo, que debe venir en el orden del CSV.
+ */
+export function markCanonical(mons) {
+  const byDex = new Map();
+  for (const p of mons) {
+    if (!byDex.has(p.dex)) byDex.set(p.dex, []);
+    byDex.get(p.dex).push(p);
+  }
+  for (const group of byDex.values()) {
+    const chosen = group.find((p) => !p.slug.includes("-")) ?? group[0];
+    for (const p of group) p.canonical = p === chosen;
+  }
+  return mons;
+}
+
+// Unicas formas alternativas que se admiten entre los legendarios.
+const GALAR_BIRDS = ["articuno-galar", "zapdos-galar", "moltres-galar"];
+
 export const CATEGORIES = [
   {
     slug: "favorito-absoluto", name: "Pok\u00e9mon favorito absoluto", emoji: "\u2B50",
@@ -42,8 +64,16 @@ export const CATEGORIES = [
   },
   {
     slug: "legendario", name: "Legendario favorito", emoji: "\u{1F451}",
-    group: "Cl\u00e1sicas", description: "Especies marcadas como legendarias en la base (117 registros).",
-    match: (p) => p.legendary && !p.mythical,
+    group: "Cl\u00e1sicas",
+    description: "Una forma por especie: sin Megas, Primigenios, Gigamax ni formas especiales. Las aves de Galar s\u00ed cuentan.",
+    match: (p) => p.legendary && !p.mythical && (p.canonical || GALAR_BIRDS.includes(p.slug)),
+  },
+  {
+    slug: "legendario-especial", name: "Legendario especial favorito", emoji: "\u{1F31F}",
+    group: "Clásicas",
+    description: "Formas alternativas de legendarios: Megas, Primigenios, Coronados, jinetes de Calyrex, modos de Koraidon y Miraidon, Gigamax y más.",
+    // Complemento exacto de "legendario": lo que ahi se excluye, aqui entra.
+    match: (p) => p.legendary && !p.mythical && !p.canonical && !GALAR_BIRDS.includes(p.slug),
   },
   {
     slug: "mitico", name: "M\u00edtico favorito", emoji: "\u{1F320}",
