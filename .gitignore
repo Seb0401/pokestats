@@ -8,3 +8,6 @@ out/
 next-env.d.ts
 scratch/
 archive.zip
+
+# Informe con datos personales del equipo: se conserva solo en local
+*.pdf

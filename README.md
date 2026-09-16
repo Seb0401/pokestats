@@ -7,8 +7,9 @@ siguiente— y al final se **sortean al azar** algunas categorías para la batal
 
 Gana quien haya elegido al Pokémon **más efectivo en competitivo**, medido sobre la
 base `pokemon_competitive_analysis.csv` (PokéAPI + estadísticas de uso de Smogon VGC
-2022-2024) y con el criterio que estableció el informe de Estadística Aplicada que
-acompaña al proyecto.
+2022-2024) y con el criterio que estableció el informe *Uso competitivo de los Pokémon
+en el formato VGC 2024 según su generación, tipo primario y condición legendaria*
+(Estadística Aplicada, Universidad La Salle, 2026).
 
 ```
 Anfitrión                        Jugador
@@ -204,4 +205,6 @@ poder regenerar sin conexión; bórralo para volver a descargarlo.
 - `data/pokemon_competitive_analysis.csv` — 1303 formas, 23 columnas.
 - Sprites: [PokéAPI/sprites](https://github.com/PokeAPI/sprites), carpeta
   `other/home`, que cubre Megas, Gigamax y variantes regionales.
-- `Trabajo Aplicativo - Documento formal.pdf` — el informe del que sale el modelo.
+- El informe del que sale el modelo no se incluye en el repositorio; las cifras
+  citadas arriba provienen de sus tablas de contingencia (tablas 11 y 12) y
+  conclusiones.
