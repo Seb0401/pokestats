@@ -51,7 +51,12 @@ export function markCanonical(mons) {
 // Unicas formas alternativas que se admiten entre los legendarios.
 const GALAR_BIRDS = ["articuno-galar", "zapdos-galar", "moltres-galar"];
 
-export const CATEGORIES = [
+/** Solo la forma por defecto de cada especie: sin Megas, Gigamax ni variantes. */
+const base = (fn) => (p) => p.canonical && fn(p);
+
+const starterSlot = (offsets) => (p) => STARTER_RANGES.some(([a]) => offsets.includes(p.dex - a));
+
+const BASE_CATEGORIES = [
   {
     slug: "favorito-absoluto", name: "Pok\u00e9mon favorito absoluto", emoji: "\u2B50",
     group: "General", description: "Sin filtros. El que elegir\u00edas sobre todos los dem\u00e1s.",
@@ -86,23 +91,92 @@ export const CATEGORIES = [
     match: anyOf(...PSEUDO_FINALS),
   },
   {
+    slug: "inicial-planta", name: "Inicial de tipo Planta favorito", emoji: "",
+    group: "Iniciales", description: "Las nueve líneas iniciales de tipo Planta, de Bulbasaur a Sprigatito.",
+    match: starterSlot([0, 1, 2]),
+  },
+  {
+    slug: "inicial-fuego", name: "Inicial de tipo Fuego favorito", emoji: "",
+    group: "Iniciales", description: "Las nueve líneas iniciales de tipo Fuego, de Charmander a Fuecoco.",
+    match: starterSlot([3, 4, 5]),
+  },
+  {
+    slug: "inicial-agua", name: "Inicial de tipo Agua favorito", emoji: "",
+    group: "Iniciales", description: "Las nueve líneas iniciales de tipo Agua, de Squirtle a Quaxly.",
+    match: starterSlot([6, 7, 8]),
+  },
+  {
+    slug: "inicial-final", name: "Inicial en su etapa final favorito", emoji: "",
+    group: "Iniciales", description: "Solo la última evolución de cada inicial: Venusaur, Charizard, Blastoise, Typhlosion…",
+    match: starterSlot([2, 5, 8]),
+  },
+  {
+    slug: "legendario-portada", name: "Legendario de portada favorito", emoji: "",
+    group: "Tríos y grupos",
+    description: "Los legendarios que protagonizan la carátula de su juego: Lugia, Rayquaza, Dialga, Xerneas, Koraidon…",
+    match: base(anyOf(249, 250, 382, 383, 384, 483, 484, 487, 643, 644, 646, 716, 717, 791, 792, 800, 888, 889, 1007, 1008)),
+  },
+  {
+    slug: "trio-lagos", name: "Trío del lago favorito", emoji: "",
+    group: "Tríos y grupos", description: "Uxie, Mesprit y Azelf, los guardianes de los lagos de Sinnoh.",
+    match: range(480, 482),
+  },
+  {
+    slug: "espadas-justicia", name: "Espada de la justicia favorita", emoji: "",
+    group: "Tríos y grupos", description: "Cobalion, Terrakion, Virizion y Keldeo.",
+    match: base(anyOf(638, 639, 640, 647)),
+  },
+  {
+    slug: "fuerzas-naturaleza", name: "Fuerza de la naturaleza favorita", emoji: "",
+    group: "Tríos y grupos", description: "Tornadus, Thundurus, Landorus y Enamorus en su forma Avatar.",
+    match: base(anyOf(641, 642, 645, 905)),
+  },
+  {
+    slug: "guardianes-alola", name: "Guardián de Alola favorito", emoji: "",
+    group: "Tríos y grupos", description: "Tapu Koko, Tapu Lele, Tapu Bulu y Tapu Fini.",
+    match: range(785, 788),
+  },
+  {
+    slug: "tesoros-funestos", name: "Tesoro funesto favorito", emoji: "",
+    group: "Tríos y grupos", description: "Wo-Chien, Chien-Pao, Ting-Lu y Chi-Yu, los legendarios ruinosos de Paldea.",
+    match: range(1001, 1004),
+  },
+  {
+    slug: "bebe", name: "Pokémon bebé favorito", emoji: "",
+    group: "Especiales", description: "Pichu, Cleffa, Togepi, Munchlax, Riolu y el resto de preevoluciones bebé.",
+    match: base(anyOf(172, 173, 174, 175, 236, 238, 239, 240, 298, 360, 406, 433, 438, 439, 440, 446, 447, 458, 848)),
+  },
+  {
+    slug: "fosil", name: "Pokémon fósil favorito", emoji: "",
+    group: "Especiales", description: "Revividos a partir de fósiles: Omanyte, Aerodactyl, Cranidos, Tyrunt, Dracozolt…",
+    match: base(anyOf(
+      138, 139, 140, 141, 142, 345, 346, 347, 348, 408, 409, 410, 411,
+      564, 565, 566, 567, 696, 697, 698, 699, 880, 881, 882, 883,
+    )),
+  },
+  {
+    slug: "pikaclon", name: "Roedor eléctrico favorito", emoji: "",
+    group: "Especiales", description: "La familia de Pikachu y sus parecidos: Plusle, Minun, Pachirisu, Dedenne, Pawmot…",
+    match: base(anyOf(25, 26, 172, 311, 312, 417, 587, 702, 777, 877, 921, 922, 923)),
+  },
+  {
     slug: "trio-aves", name: "Tr\u00edo de aves legendarias", emoji: "\u{1F985}",
-    group: "Tr\u00edos", description: "Articuno, Zapdos y Moltres, incluidas sus formas de Galar.",
+    group: "Tr\u00edos y grupos", description: "Articuno, Zapdos y Moltres, incluidas sus formas de Galar.",
     match: range(144, 146),
   },
   {
     slug: "trio-bestias", name: "Tr\u00edo de bestias legendarias", emoji: "\u{1F43A}",
-    group: "Tr\u00edos", description: "Raikou, Entei y Suicune.",
+    group: "Tr\u00edos y grupos", description: "Raikou, Entei y Suicune.",
     match: range(243, 245),
   },
   {
     slug: "trio-regis", name: "Gigante Regi favorito", emoji: "\u{1F5FF}",
-    group: "Tr\u00edos", description: "Regirock, Regice, Registeel, Regigigas, Regieleki y Regidrago.",
+    group: "Tr\u00edos y grupos", description: "Regirock, Regice, Registeel, Regigigas, Regieleki y Regidrago.",
     match: anyOf(377, 378, 379, 486, 894, 895),
   },
   {
     slug: "eeveelucion", name: "Eeveeluci\u00f3n favorita", emoji: "\u{1F98A}",
-    group: "Tr\u00edos", description: "Eevee y sus ocho evoluciones.",
+    group: "Tr\u00edos y grupos", description: "Eevee y sus ocho evoluciones.",
     match: anyOf(133, 134, 135, 136, 196, 197, 470, 471, 700),
   },
   {
@@ -127,7 +201,7 @@ export const CATEGORIES = [
   },
   {
     slug: "regional", name: "Forma regional favorita", emoji: "\u{1F5FA}\uFE0F",
-    group: "Especiales", description: "Variantes de Alola, Galar, Hisui y Paldea.",
+    group: "Especiales", description: "Variantes de Alola, Galar, Hisui y Paldea. Es la \u00fanica categor\u00eda donde aparecen, salvo las aves de Galar.",
     match: (p) => p.form === "regional",
   },
   {
@@ -162,8 +236,8 @@ export const CATEGORIES = [
     name: `Favorito de generaci\u00f3n ${num}`,
     emoji: "\u{1F3AE}",
     group: "Generaciones",
-    description: `Especies introducidas en la generaci\u00f3n ${num} (${region}).`,
-    match: (p) => p.generation === `generation-${key}`,
+    description: `Una forma por especie introducida en ${region}: sin Megas, Gigamax ni formas especiales.`,
+    match: base((p) => p.generation === `generation-${key}`),
   })),
   ...TYPES.map(([key, es, emoji]) => ({
     slug: `tipo-${key}`,
@@ -174,3 +248,18 @@ export const CATEGORIES = [
     match: (p) => p.type1 === key || p.type2 === key,
   })),
 ];
+
+// Las formas regionales solo compiten en "Forma regional favorita". Las aves de
+// Galar son la excepcion pedida: tambien cuentan como legendarios y como trio.
+const REGIONAL_HOME = new Set(["regional"]);
+const GALAR_BIRD_HOMES = new Set(["legendario", "trio-aves"]);
+
+export const CATEGORIES = BASE_CATEGORIES.map((c) => ({
+  ...c,
+  match: (p) => {
+    if (p.form === "regional" && !REGIONAL_HOME.has(c.slug)) {
+      if (!(GALAR_BIRD_HOMES.has(c.slug) && GALAR_BIRDS.includes(p.slug))) return false;
+    }
+    return c.match(p);
+  },
+}));

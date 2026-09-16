@@ -51,7 +51,9 @@ const WORD_FIXES = {
 function classifyForm(slug) {
   if (slug.includes("-gmax") || slug.includes("-eternamax")) return "gmax";
   if (/-mega(-|$)/.test(slug)) return "mega";
-  for (const r of Object.keys(REGIONS)) if (slug.includes("-" + r)) return "regional";
+  // Por segmento, no por subcadena: "pikachu-alola-cap" es una gorra, no Alola.
+  const parts = slug.split("-");
+  if (!parts.includes("cap") && parts.some((w) => REGIONS[w])) return "regional";
   if (slug.includes("-")) return "alt";
   return "base";
 }
@@ -153,6 +155,16 @@ async function resolveSpriteIds(entries) {
 
 // --- Normalizacion -----------------------------------------------------
 
+// Ultimo numero de Pokedex de cada generacion. El CSV trae la generacion como
+// columna, pero con un error (porygon-z, N.o 474, figura en la I); el numero de
+// Pokedex no admite ambiguedad.
+const GEN_LAST_DEX = [151, 251, 386, 493, 649, 721, 809, 905, 1025];
+const GEN_KEYS = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix"];
+const generationOf = (dex, fallback) => {
+  const i = GEN_LAST_DEX.findIndex((last) => dex <= last);
+  return i >= 0 ? "generation-" + GEN_KEYS[i] : fallback;
+};
+
 function normalize(row) {
   const slug = row.name;
   const form = classifyForm(slug);
@@ -183,7 +195,7 @@ function normalize(row) {
     total: Number(row.total_stats),
     legendary: row.legendary === "True",
     mythical: row.mythical === "True",
-    generation: row.generation,
+    generation: generationOf(Number(row.index), row.generation),
     profile,
     dual: Boolean(type2),
     usage: {
