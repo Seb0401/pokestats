@@ -64,8 +64,8 @@ const BASE_CATEGORIES = [
   },
   {
     slug: "inicial", name: "Inicial favorito", emoji: "\u{1F95A}",
-    group: "Cl\u00e1sicas", description: "Cualquier miembro de las 27 l\u00edneas iniciales, de Kanto a Paldea.",
-    match: inRanges(...STARTER_RANGES),
+    group: "Cl\u00e1sicas", description: "Cualquier miembro de las 27 l\u00edneas iniciales, de Kanto a Paldea, sin Megas ni Gigamax.",
+    match: (p) => p.form !== "mega" && p.form !== "gmax" && inRanges(...STARTER_RANGES)(p),
   },
   {
     slug: "legendario", name: "Legendario favorito", emoji: "\u{1F451}",
