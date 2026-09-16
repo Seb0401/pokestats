@@ -1,27 +1,24 @@
 # PokéStats
 
-Juego web multijugador en vivo, al estilo Quizizz, donde cada jugador llena un
-**cuadro de doble entrada** de Pokémon favoritos por categoría. Un anfitrión marca
-el ritmo —abre una categoría, la cierra y revela las elecciones de todos, pasa a la
-siguiente— y al final se **sortean al azar** algunas categorías para la batalla.
+Juego web multijugador en vivo, al estilo Quizizz, con interfaz de Pokédex. Cada
+entrenador llena un **cuadro de doble entrada** de Pokémon favoritos por categoría,
+al ritmo que marca un anfitrión, y después todos compiten en un **torneo por llaves**
+con duelos de equipos de 6.
 
-Gana quien haya elegido al Pokémon **más efectivo en competitivo**, medido sobre la
-base `pokemon_competitive_analysis.csv` (PokéAPI + estadísticas de uso de Smogon VGC
+Gana el equipo **más efectivo en competitivo**, medido sobre la base
+`pokemon_competitive_analysis.csv` (PokéAPI + estadísticas de uso de Smogon VGC
 2022-2024) y con el criterio que estableció el informe *Uso competitivo de los Pokémon
 en el formato VGC 2024 según su generación, tipo primario y condición legendaria*
 (Estadística Aplicada, Universidad La Salle, 2026).
 
 ```
-Anfitrión                        Jugador
-┌───────────────────────┐        ┌───────────────────────┐
-│ Categoría 3 de 8      │        │ 🥚 Inicial favorito   │
-│ 🥚 Inicial favorito   │        │ [ buscar…          ]  │
-│                       │        │ ▣ ▢ ▢ ▢ ▢ ▢           │
-│      4/5 ya eligieron │        │ ▢ ▢ ▢ ▢ ▢ ▢           │
-│ [Revelar] [Siguiente] │        │ Tu elección: Rillaboom│
-└───────────────────────┘        └───────────────────────┘
-                      ↓ al cerrar todas
-          🎲 sorteo de 3 categorías → batalla → tabla de posiciones
+1. Elección            2. Llaves (2^n)           3. Duelos 6 vs 6
+┌──────────────────┐   Ash ──┐                   Ash          Misty
+│ Inicial favorito │         ├─ Ash ──┐          Incineroar   Zacian
+│ [buscar…]        │   Bot ──┘        │          Dragonite    Kyogre
+│ 4/5 ya eligieron │   Misty ─┐       ├─ ?       …            …
+└──────────────────┘          ├─ … ───┘          promedio  <  promedio
+   el anfitrión avanza  Brock ┘                            gana Misty
 ```
 
 ---
@@ -61,11 +58,24 @@ La interfaz marca esos casos como *estimado*.
 El ranking resultante reproduce el meta real: Flutter Mane, Incineroar, Zacian
 Coronado, Calyrex Jinete Espectral y Ogerpon encabezan la tabla.
 
-### Puntos de la competencia
+Los puntajes **no se muestran a los jugadores**: ni en la pantalla, ni en las
+respuestas de la API, ni consultando Supabase con la clave anónima. Solo el
+anfitrión los ve, para explicar cada resultado.
 
-Por cada ronda de batalla revelada, cada jugador suma el puntaje de su Pokémon
-redondeado, más **25 puntos de bonificación** si gana la ronda. En caso de empate en
-el máximo, todos los empatados cobran la bonificación.
+### El torneo
+
+- **Llaves de 2ⁿ.** Si los entrenadores no llegan a una potencia de 2, se agregan
+  bots hasta la siguiente (5 entrenadores → llaves de 8 con 3 bots). En la primera
+  ronda cada bot enfrenta a un humano, nunca a otro bot.
+- **Bots.** Eligen al azar dentro de cada categoría.
+- **Elecciones faltantes.** Quien no elige antes de que se cierre una categoría, o
+  entra tarde, recibe un Pokémon sorteado de esa categoría. Se marca con un dado.
+- **Duelos 6 vs 6.** Con 6 categorías o menos en la sala, ambos pelean con todos sus
+  Pokémon. Con más, en cada duelo se sortean 6 categorías por entrenador, distintas
+  para cada lado y nuevas en cada ronda.
+- **Resultado.** Gana el mayor promedio de puntaje del equipo; un empate exacto se
+  resuelve al azar. El resultado se calcula al crear el duelo y queda oculto hasta que
+  el anfitrión lo revela.
 
 ---
 
@@ -74,7 +84,9 @@ el máximo, todos los empatados cobran la bonificación.
 ### 1. Base de datos (Supabase)
 
 1. Crea un proyecto en [supabase.com](https://supabase.com).
-2. En **SQL Editor**, ejecuta primero `supabase/schema.sql`.
+2. En **SQL Editor**, ejecuta primero `supabase/schema.sql`. Si tu base viene de la
+   versión anterior (sorteo de rondas con marcador), ejecuta en cambio
+   `supabase/migrations/002_torneo.sql`.
 3. Carga el catálogo (1303 Pokémon + 46 categorías). Lo más cómodo, una vez
    completado `.env.local` (paso 2):
    ```bash
@@ -117,16 +129,16 @@ va **sin** el prefijo `NEXT_PUBLIC_`: solo la leen las route handlers del servid
 
 ## Cómo se juega
 
-1. El anfitrión entra a `/crear`, elige entre 2 y 20 categorías de un catálogo de 46,
-   las ordena y decide cuántas irán al sorteo final. Recibe un código de 6 dígitos.
+1. El anfitrión entra a `/crear`, elige entre 2 y 20 categorías de un catálogo de 47
+   y las ordena. Recibe un código de 6 dígitos.
 2. Los jugadores entran desde la portada con ese código y un apodo. Sin registro.
-3. El anfitrión pulsa **Empezar**. Se abre la primera categoría.
-4. Cada jugador busca y elige su Pokémon. Puede cambiarlo mientras la categoría
-   siga abierta. El anfitrión solo ve el contador `4/5 ya eligieron`.
-5. **Revelar** destapa la fila del cuadro. **Siguiente categoría** avanza.
-6. Cerradas todas, **Sortear** elige al azar las categorías de batalla.
-7. El anfitrión revela una ronda a la vez; cada una muestra el desglose del puntaje
-   del ganador y la tabla de posiciones se actualiza.
+3. **Empezar** abre la primera categoría. Cada jugador busca y elige; puede cambiar
+   mientras siga abierta. El anfitrión solo ve el contador `4/5 ya eligieron`.
+4. **Revelar** destapa la fila del cuadro; **Siguiente categoría** avanza. Al cerrar
+   una categoría se sortea un Pokémon para quien no eligió.
+5. Cerradas todas, **Armar llaves** crea los bots necesarios y los cruces.
+6. **Revelar duelo** muestra cada enfrentamiento con los dos equipos. Terminada la
+   ronda, se pasa a la siguiente hasta **Coronar campeón**.
 
 ---
 
@@ -142,28 +154,30 @@ src/
     api/
       rooms/route.ts              POST  crear sala
       rooms/[code]/join           POST  entrar con apodo
-      rooms/[code]/state          GET   estado filtrado según quién pregunta
+      rooms/[code]/state          GET   estado filtrado según quién pregunta (sin puntajes para jugadores)
       rooms/[code]/pick           POST  elegir Pokémon
       rooms/[code]/host           POST  acciones del anfitrión
       categories/…                GET   catálogo (cacheado en el CDN)
   lib/
-    game.ts                       toda la lógica de partida (solo servidor)
+    game.ts                       partida, llaves, bots y duelos (solo servidor)
     scoring → scripts/scoring.mjs puntaje competitivo (fuente única)
     client.ts                     fetch + estado en vivo
   components/
     PickGrid.tsx                  el cuadro de doble entrada
-    Battle.tsx                    rondas de batalla
+    Bracket.tsx                   llaves, arena de duelo y campeón
+    Dex.tsx                       carcasa y pantallas de la Pokédex
+    icons.tsx                     iconos SVG propios (categorías, tipos, interfaz)
     PokemonPicker.tsx             buscador dentro de la categoría
 scripts/
-  categories.mjs                  las 46 categorías y sus filtros
+  categories.mjs                  las 47 categorías y sus filtros
   scoring.mjs                     el modelo de puntaje
   build-seed.mjs                  CSV → supabase/seed.sql
 ```
 
 ### Por qué las elecciones no se filtran
 
-La tabla `picks` **no tiene política de `select`**: es inalcanzable con la clave
-anónima. Los clientes se suscriben por Realtime a `rooms`, `room_categories` y
+Las tablas `picks` y `matches` **no tienen política de `select`**: son inalcanzables
+con la clave anónima. Los clientes se suscriben por Realtime a `rooms`, `room_categories` y
 `players`, que solo llevan estado público —incluido el contador `picked_count`, que
 permite mostrar «4 de 5 ya eligieron» sin revelar *qué* eligieron—. Cualquier cambio
 dispara un `GET /api/rooms/[code]/state`, y es el servidor, con la `service_role`
@@ -173,7 +187,13 @@ la elección propia. Abrir las herramientas de desarrollo no adelanta nada.
 Las filas de `rooms` y `players` sí son legibles, pero **sus credenciales no**: el
 esquema retira el `select` de tabla y lo concede columna por columna, dejando fuera
 `rooms.host_token` y `players.token`. Sin eso, cualquiera con la clave anónima
-—que es pública por diseño— podría suplantar al anfitrión o a otro jugador.
+—que es pública por diseño— podría suplantar al anfitrión o a otro jugador. Lo
+mismo con `pokemon`: las columnas de puntaje no se conceden, y el catálogo que usa el
+buscador se sirve sin ellas.
+
+Una advertencia honesta: el modelo y el seed están en este repositorio público, así
+que alguien decidido puede reconstruir los puntajes fuera del juego. La protección
+evita que se filtren *durante* la partida, no que existan.
 
 Las escrituras pasan todas por route handlers que validan el token de anfitrión o de
 jugador; ninguna tabla tiene política de `insert`/`update`/`delete`.
@@ -189,11 +209,13 @@ Si cambias los pesos en `scripts/scoring.mjs` o las categorías en
 
 ```bash
 npm run seed:build     # reescribe supabase/seed.sql
+npm run seed:upload    # carga el catálogo con la service role key de .env.local
+npm run seed:check     # imprime el ganador por categoría, para revisar el modelo
 ```
 
-Después vuelve a ejecutar `supabase/seed.sql` en Supabase — empieza con un `truncate`,
-así que es idempotente y no toca las partidas en curso… salvo que las haya, en cuyo
-caso el `cascade` las borra. Regenera entre partidas.
+`seed:upload` actualiza las filas sin tocar las partidas. Pegar `supabase/seed.sql`
+en el SQL Editor también funciona, pero empieza con un `truncate … cascade` que borra
+las partidas en curso: úsalo entre partidas.
 
 El script cachea el índice de nombres de PokéAPI en `scripts/.pokeapi-ids.json` para
 poder regenerar sin conexión; bórralo para volver a descargarlo.
