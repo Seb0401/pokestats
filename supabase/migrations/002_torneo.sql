@@ -1,35 +1,29 @@
--- Migracion: de "sorteo de rondas con marcador" a torneo por llaves 2^n.
--- Aplicar sobre una base que ya tiene schema.sql original. Una base nueva solo
--- necesita schema.sql, que ya incluye estos cambios.
-
--- Las salas de la version anterior no son compatibles con el torneo.
-delete from public.rooms;
+-- Migracion 1 de 2: agrega lo que necesita el torneo por llaves sin quitar nada.
+--
+-- Es compatible hacia atras: la version anterior de la app (sorteo de rondas con
+-- marcador) sigue funcionando con este esquema, asi que se puede aplicar antes de
+-- desplegar. Una vez desplegada la version nueva, aplicar 003_limpieza.sql.
+-- Una base nueva solo necesita schema.sql.
 
 -- ---------------------------------------------------------------------------
--- Salas: fase de llaves en lugar de batalla por marcador
+-- Salas: fase de llaves
 -- ---------------------------------------------------------------------------
 
-alter table public.rooms drop constraint if exists rooms_phase_check;
 alter table public.rooms
-  drop column if exists battle_rounds,
-  drop column if exists battle_categories,
-  drop column if exists battle_revealed,
   add column if not exists bracket_size  int not null default 0,
   add column if not exists current_round int not null default 0;
+
+-- Durante la transicion se aceptan las fases de ambas versiones.
+alter table public.rooms drop constraint if exists rooms_phase_check;
 alter table public.rooms add constraint rooms_phase_check
-  check (phase in ('lobby','picking','bracket','finished'));
+  check (phase in ('lobby','picking','battle','bracket','finished'));
 
 -- ---------------------------------------------------------------------------
--- Bots de relleno
+-- Bots y elecciones sorteadas
 -- ---------------------------------------------------------------------------
 
 alter table public.players add column if not exists is_bot boolean not null default false;
-
--- ---------------------------------------------------------------------------
--- Elecciones sorteadas (bots y jugadores que no eligieron a tiempo)
--- ---------------------------------------------------------------------------
-
-alter table public.picks add column if not exists random boolean not null default false;
+alter table public.picks   add column if not exists random boolean not null default false;
 
 -- ---------------------------------------------------------------------------
 -- Duelos
@@ -64,16 +58,14 @@ alter table public.matches enable row level security;
 -- Permisos de columna
 -- ---------------------------------------------------------------------------
 
-revoke select on public.rooms   from anon, authenticated;
-revoke select on public.players from anon, authenticated;
-grant select (id, code, host_name, phase, current_position, bracket_size,
-              current_round, created_at, updated_at)
-  on public.rooms to anon, authenticated;
-grant select (id, room_id, nickname, is_bot, connected, joined_at)
-  on public.players to anon, authenticated;
+-- Las columnas nuevas se suman a las ya concedidas; las de la version anterior
+-- se retiran en 003.
+grant select (bracket_size, current_round) on public.rooms to anon, authenticated;
+grant select (is_bot) on public.players to anon, authenticated;
 
 -- Los jugadores no deben poder consultar el puntaje competitivo: con la clave
--- anonima, que es publica, bastaria una peticion para saber que elegir.
+-- anonima, que es publica, bastaria una peticion para saber que elegir. La app
+-- lee los puntajes con la service role key, asi que ninguna version se afecta.
 revoke select on public.pokemon from anon, authenticated;
 grant select (slug, dex, name, form, type1, type2, ability1, ability_hidden,
               hp, attack, defense, sp_atk, sp_def, speed, total_stats,

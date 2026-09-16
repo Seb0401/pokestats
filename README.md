@@ -85,8 +85,10 @@ anfitrión los ve, para explicar cada resultado.
 
 1. Crea un proyecto en [supabase.com](https://supabase.com).
 2. En **SQL Editor**, ejecuta primero `supabase/schema.sql`. Si tu base viene de la
-   versión anterior (sorteo de rondas con marcador), ejecuta en cambio
-   `supabase/migrations/002_torneo.sql`.
+   versión anterior (sorteo de rondas con marcador), actualízala sin cortar el servicio:
+   1. `supabase/migrations/002_torneo.sql`: solo agrega; la versión vieja sigue andando.
+   2. Despliega la versión nueva.
+   3. `supabase/migrations/003_limpieza.sql`: retira las columnas que ya nadie usa.
 3. Carga el catálogo (1303 Pokémon + 46 categorías). Lo más cómodo, una vez
    completado `.env.local` (paso 2):
    ```bash
