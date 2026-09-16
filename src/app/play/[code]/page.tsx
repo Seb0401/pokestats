@@ -15,7 +15,7 @@ import { ArrowRightIcon, BallMark, CategoryIcon, LockIcon, SwordsIcon, TrophyIco
 
 export default function PlayPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
-  const { state, error, refresh } = useGameState(code);
+  const { state, error, refresh } = useGameState(code, "player");
 
   const shell = (children: React.ReactNode, subtitle?: string) => (
     <main>

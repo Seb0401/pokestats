@@ -18,7 +18,7 @@ const bracketSizeFor = (n: number) => Math.max(2, 2 ** Math.ceil(Math.log2(Math.
 
 export default function HostPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
-  const { state, error, refresh } = useGameState(code);
+  const { state, error, refresh } = useGameState(code, "host");
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 

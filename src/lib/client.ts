@@ -4,22 +4,41 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { browser } from "./supabase";
 import type { Category, GameState, Pokemon } from "./types";
 
-// --- Credenciales (localStorage) --------------------------------------------
+// --- Credenciales -----------------------------------------------------------
 
 const hostKey = (code: string) => `pokestats:host:${code}`;
 const playerKey = (code: string) => `pokestats:player:${code}`;
 
-const read = (k: string) => {
-  try { return localStorage.getItem(k); } catch { return null; }
+type Store = "local" | "session";
+
+const storage = (kind: Store): Storage | null => {
+  try { return kind === "local" ? window.localStorage : window.sessionStorage; } catch { return null; }
 };
-const write = (k: string, v: string) => {
-  try { localStorage.setItem(k, v); } catch { /* modo privado */ }
+const read = (kind: Store, k: string) => {
+  try { return storage(kind)?.getItem(k) ?? null; } catch { return null; }
+};
+const write = (kind: Store, k: string, v: string) => {
+  try { storage(kind)?.setItem(k, v); } catch { /* modo privado */ }
 };
 
-export const getHostToken = (code: string) => read(hostKey(code));
-export const setHostToken = (code: string, t: string) => write(hostKey(code), t);
-export const getPlayerToken = (code: string) => read(playerKey(code));
-export const setPlayerToken = (code: string, t: string) => write(playerKey(code), t);
+// El anfitrion es uno por sala: su credencial vive en localStorage para que
+// sobreviva a recargas y a abrir la consola en otra pestaña.
+export const getHostToken = (code: string) => read("local", hostKey(code));
+export const setHostToken = (code: string, t: string) => write("local", hostKey(code), t);
+
+// Cada pestaña es un jugador distinto: localStorage lo comparten todas las
+// pestañas del navegador, y un segundo jugador pisaba la credencial del primero.
+// La credencial vive en sessionStorage (por pestaña). La copia en localStorage
+// solo sirve para recuperar la sesion si se cierra la pestaña y se vuelve a abrir.
+export const getPlayerToken = (code: string) =>
+  read("session", playerKey(code)) ?? read("local", playerKey(code));
+export const setPlayerToken = (code: string, t: string) => {
+  write("session", playerKey(code), t);
+  write("local", playerKey(code), t);
+};
+
+/** Quien mira la sala. Cada pantalla envia solo la credencial de su rol. */
+export type Role = "host" | "player";
 
 // --- Fetch ------------------------------------------------------------------
 
@@ -32,12 +51,14 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   return json as T;
 }
 
-function authHeaders(code: string): Record<string, string> {
+/**
+ * Enviar ambas credenciales hacia que una pestaña de jugador, abierta en el mismo
+ * navegador donde se creo la sala, recibiera la vista del anfitrion con puntajes.
+ */
+function authHeaders(code: string, role: Role): Record<string, string> {
   const h: Record<string, string> = { "content-type": "application/json" };
-  const host = getHostToken(code);
-  const player = getPlayerToken(code);
-  if (host) h["x-host-token"] = host;
-  if (player) h["x-player-token"] = player;
+  const credential = role === "host" ? getHostToken(code) : getPlayerToken(code);
+  if (credential) h[role === "host" ? "x-host-token" : "x-player-token"] = credential;
   return h;
 }
 
@@ -64,23 +85,23 @@ export const api = {
       },
     ),
 
-  state: (code: string) =>
+  state: (code: string, role: Role) =>
     request<GameState>(`/api/rooms/${code}/state`, {
-      headers: authHeaders(code),
+      headers: authHeaders(code, role),
       cache: "no-store",
     }),
 
   pick: (code: string, pokemon: string) =>
     request<{ ok: true }>(`/api/rooms/${code}/pick`, {
       method: "POST",
-      headers: authHeaders(code),
+      headers: authHeaders(code, "player"),
       body: JSON.stringify({ pokemon }),
     }),
 
   host: (code: string, action: string) =>
     request<Record<string, unknown>>(`/api/rooms/${code}/host`, {
       method: "POST",
-      headers: authHeaders(code),
+      headers: authHeaders(code, "host"),
       body: JSON.stringify({ action }),
     }),
 };
@@ -97,7 +118,7 @@ export const api = {
  *
  * El sondeo de respaldo cubre el caso de que el websocket se caiga.
  */
-export function useGameState(code: string, pollMs = 6000) {
+export function useGameState(code: string, role: Role, pollMs = 6000) {
   const [state, setState] = useState<GameState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const inFlight = useRef(false);
@@ -107,7 +128,7 @@ export function useGameState(code: string, pollMs = 6000) {
     if (inFlight.current) { pending.current = true; return; }
     inFlight.current = true;
     try {
-      setState(await api.state(code));
+      setState(await api.state(code, role));
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo cargar la sala.");
@@ -115,7 +136,7 @@ export function useGameState(code: string, pollMs = 6000) {
       inFlight.current = false;
       if (pending.current) { pending.current = false; void refresh(); }
     }
-  }, [code]);
+  }, [code, role]);
 
   useEffect(() => {
     void refresh();
