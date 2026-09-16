@@ -95,6 +95,9 @@ h1, h2, h3, .font-display {
   .type-fairy    { --type: #d685ad; }
 }
 
+/* Componentes en su capa: las utilidades de Tailwind (pl-9, py-2…) deben
+   poder sobrescribirlos, y el CSS sin capa siempre les gana. */
+@layer components {
 /* ---------------------------------------------------------------------------
    Carcasa de la Pokédex
    --------------------------------------------------------------------------- */
@@ -296,6 +299,7 @@ h1, h2, h3, .font-display {
   flex: 1;
   height: 1px;
   background: linear-gradient(90deg, rgba(127, 209, 199, 0.35), transparent);
+}
 }
 
 /* ---------------------------------------------------------------------------

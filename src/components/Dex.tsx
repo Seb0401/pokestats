@@ -37,7 +37,7 @@ export function BallWatermark({ className = "" }: { className?: string }) {
  * la tapa. Todo lo que va dentro se monta sobre `Screen`.
  */
 export function DexShell({
-  title, subtitle, right, children, back, footer = true,
+  title, subtitle, right, children, back, footer = true, wide = false,
 }: {
   title: React.ReactNode;
   subtitle?: React.ReactNode;
@@ -45,9 +45,11 @@ export function DexShell({
   children: React.ReactNode;
   back?: string;
   footer?: boolean;
+  /** Pantallas con mucho contenido (armar la partida) usan más ancho. */
+  wide?: boolean;
 }) {
   return (
-    <div className="relative mx-auto w-full max-w-5xl px-3 py-5 sm:px-5 sm:py-8">
+    <div className={`relative mx-auto w-full overflow-x-clip ${wide ? "max-w-7xl" : "max-w-5xl"} px-3 py-5 sm:px-5 sm:py-8`}>
       <BallWatermark className="-right-40 -top-24 hidden lg:block" />
       <section className="dex relative pb-4 sm:pb-6">
         {/* Cabecera con lente y luces */}
@@ -81,7 +83,7 @@ export function DexShell({
           <path d="M0 20 H171 L197 6 H400" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" />
         </svg>
 
-        <div className="grid gap-4 px-3 pt-2 sm:px-6">{children}</div>
+        <div className="grid min-w-0 gap-4 px-3 pt-2 sm:px-6">{children}</div>
 
         {footer && (
           <div className="mt-5 hidden items-center justify-between px-6 sm:flex" aria-hidden>
@@ -107,8 +109,8 @@ export function Screen({
   inner?: string;
 }) {
   return (
-    <div className={`bezel ${className}`}>
-      <div className={`screen p-3 sm:p-5 ${inner}`}>{children}</div>
+    <div className={`bezel min-w-0 ${className}`}>
+      <div className={`screen min-w-0 p-3 sm:p-5 ${inner}`}>{children}</div>
     </div>
   );
 }

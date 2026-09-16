@@ -68,6 +68,10 @@ anfitrión los ve, para explicar cada resultado.
   bots hasta la siguiente (5 entrenadores → llaves de 8 con 3 bots). En la primera
   ronda cada bot enfrenta a un humano, nunca a otro bot.
 - **Bots.** Eligen al azar dentro de cada categoría.
+- **Formas especiales.** Las categorías de generación y los grupos legendarios usan
+  una forma por especie. Las formas regionales solo compiten en «Forma regional
+  favorita», salvo las aves de Galar, que también cuentan en «Legendario» y en
+  «Trío de aves».
 - **Elecciones faltantes.** Quien no elige antes de que se cierre una categoría, o
   entra tarde, recibe un Pokémon sorteado de esa categoría. Se marca con un dado.
 - **Duelos 6 vs 6.** Con 6 categorías o menos en la sala, ambos pelean con todos sus
@@ -131,7 +135,7 @@ va **sin** el prefijo `NEXT_PUBLIC_`: solo la leen las route handlers del servid
 
 ## Cómo se juega
 
-1. El anfitrión entra a `/crear`, elige entre 2 y 20 categorías de un catálogo de 47
+1. El anfitrión entra a `/crear`, elige entre 2 y 20 categorías de un catálogo de 60
    y las ordena. Recibe un código de 6 dígitos.
 2. Los jugadores entran desde la portada con ese código y un apodo. Sin registro.
 3. **Empezar** abre la primera categoría. Cada jugador busca y elige; puede cambiar
@@ -171,7 +175,7 @@ src/
     icons.tsx                     iconos SVG propios (categorías, tipos, interfaz)
     PokemonPicker.tsx             buscador dentro de la categoría
 scripts/
-  categories.mjs                  las 47 categorías y sus filtros
+  categories.mjs                  las 60 categorías y sus filtros
   scoring.mjs                     el modelo de puntaje
   build-seed.mjs                  CSV → supabase/seed.sql
 ```

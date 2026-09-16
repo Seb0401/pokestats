@@ -95,7 +95,7 @@ export default function Home() {
                 Elige las categorías, marca el ritmo y revela cada duelo en la pantalla grande.
               </p>
               <ul className="grid gap-2 text-sm text-ink-200">
-                <li className="flex items-center gap-2"><ListIcon size={16} className="text-volt-400" /> 47 categorías para combinar</li>
+                <li className="flex items-center gap-2"><ListIcon size={16} className="text-volt-400" /> 60 categorías para combinar</li>
                 <li className="flex items-center gap-2"><BotIcon size={16} className="text-volt-400" /> Bots que completan las llaves</li>
                 <li className="flex items-center gap-2"><DiceIcon size={16} className="text-volt-400" /> 1303 formas, con Megas y Gigamax</li>
               </ul>

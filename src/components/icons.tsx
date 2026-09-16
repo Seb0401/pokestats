@@ -181,6 +181,47 @@ export const CartridgeIcon = (p: IconProps) => (
   <Svg {...p}><path d="M6 3h9l3 3v15H6z" /><rect x="9" y="12" width="6" height="5" rx="1" /><path d="M9 6h4" /></Svg>
 );
 
+export const HatchIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M5 14a7 7 0 0 0 14 0" /><path d="M5 14l2.5-2 2.5 2 2-2 2 2 2.5-2 2.5 2" />
+    <path d="M12 2l1 2.5 2.5 1-2.5 1L12 9l-1-2.5-2.5-1 2.5-1z" />
+  </Svg>
+);
+export const CoverIcon = (p: IconProps) => (
+  <Svg {...p}><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M5 7h14" /><path d="M9 16l3-6 3 6" /></Svg>
+);
+export const WaveIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M2 8c2-2 4-2 5 0s3 2 5 0 3-2 5 0 3 2 5 0" /><path d="M2 13c2-2 4-2 5 0s3 2 5 0 3-2 5 0 3 2 5 0" />
+    <path d="M2 18c2-2 4-2 5 0s3 2 5 0 3-2 5 0 3 2 5 0" />
+  </Svg>
+);
+export const CloudIcon = (p: IconProps) => (
+  <Svg {...p}><path d="M7 17a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 8a4.5 4.5 0 0 1 0 9z" /><path d="M10 17l-1.5 4M14 17l-1.5 4" /></Svg>
+);
+export const TotemIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M6 4h12v9a6 6 0 0 1-12 0z" /><path d="M9 9h2M13 9h2" /><path d="M10 14h4" />
+    <path d="M3 7l3 2M21 7l-3 2" />
+  </Svg>
+);
+export const UrnIcon = (p: IconProps) => (
+  <Svg {...p}><path d="M9 3h6" /><path d="M10 3v3c-3 1-5 4-5 7a7 7 0 0 0 14 0c0-3-2-6-5-7V3" /><path d="M8 13h8" /><path d="M9 21h6" /></Svg>
+);
+export const BottleIcon = (p: IconProps) => (
+  <Svg {...p}><path d="M10 2h4v3h-4z" /><path d="M9 5h6l1 3v12a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V8z" /><path d="M8 12h8M8 16h8" /></Svg>
+);
+export const FossilIcon = (p: IconProps) => (
+  <Svg {...p}><path d="M12 12a1.5 1.5 0 1 1 1.5-1.5 3.5 3.5 0 1 1-3.5-3.5 5.5 5.5 0 1 1-5.5 5.5" /><path d="M4.5 12.5L3 20h8" /></Svg>
+);
+export const MouseIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M5 3l3 6M15 3l-3 6" /><circle cx="10" cy="14" r="5" />
+    <circle cx="8.2" cy="13.5" r=".8" fill="currentColor" stroke="none" /><circle cx="11.8" cy="13.5" r=".8" fill="currentColor" stroke="none" />
+    <path d="M15 16l3-2-1 3 4-2" />
+  </Svg>
+);
+
 // --- Tipos elementales --------------------------------------------------------
 
 const TYPE_PATHS: Record<string, React.ReactNode> = {
@@ -231,12 +272,28 @@ const CATEGORY_ICONS: Record<string, (p: IconProps) => React.ReactElement> = {
   "atacante-fisico": FistIcon,
   "atacante-especial": OrbIcon,
   monotipo: MonoIcon,
+  "inicial-final": HatchIcon,
+  "legendario-portada": CoverIcon,
+  "trio-lagos": WaveIcon,
+  "espadas-justicia": BladeIcon,
+  "fuerzas-naturaleza": CloudIcon,
+  "guardianes-alola": TotemIcon,
+  "tesoros-funestos": UrnIcon,
+  bebe: BottleIcon,
+  fosil: FossilIcon,
+  pikaclon: MouseIcon,
+};
+
+/** Iniciales por tipo: se dibujan con el icono del tipo. */
+const STARTER_TYPES: Record<string, string> = {
+  "inicial-planta": "grass", "inicial-fuego": "fire", "inicial-agua": "water",
 };
 
 /** Icono de una categoria. Tipos y generaciones se derivan del slug. */
 export function CategoryIcon({ slug, ...p }: IconProps & { slug: string }) {
   if (slug.startsWith("tipo-")) return <TypeIcon type={slug.slice(5)} {...p} />;
   if (slug.startsWith("gen-")) return <CartridgeIcon {...p} />;
+  if (STARTER_TYPES[slug]) return <TypeIcon type={STARTER_TYPES[slug]} {...p} />;
   const Icon = CATEGORY_ICONS[slug] ?? BallIcon;
   return <Icon {...p} />;
 }
