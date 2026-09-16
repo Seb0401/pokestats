@@ -47,7 +47,7 @@ export const api = {
   pool: (slug: string) =>
     request<{ pokemon: Pokemon[] }>(`/api/categories/${slug}/pokemon`),
 
-  createRoom: (payload: { hostName: string; categories: string[]; battleRounds: number }) =>
+  createRoom: (payload: { hostName: string; categories: string[] }) =>
     request<{ code: string; hostToken: string }>("/api/rooms", {
       method: "POST",
       headers: { "content-type": "application/json" },

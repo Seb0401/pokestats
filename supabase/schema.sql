@@ -69,19 +69,20 @@ create table if not exists public.rooms (
   code               text not null unique check (code ~ '^[0-9]{6}$'),
   host_token         text not null,
   host_name          text not null default 'Anfitrion',
-  -- lobby -> picking -> battle -> finished
-  phase              text not null default 'lobby'
-                     check (phase in ('lobby','picking','battle','finished')),
+  -- lobby -> picking -> bracket -> finished
+  phase              text not null default 'lobby',
   current_position   int  not null default 0,
-  -- Cuantas categorias se sortean para la batalla final.
-  battle_rounds      int  not null default 3 check (battle_rounds between 1 and 10),
-  -- Categorias sorteadas, en orden de enfrentamiento. Se llena al pasar a 'battle'.
-  battle_categories  text[] not null default '{}',
-  -- Cuantas rondas de batalla ya se revelaron.
-  battle_revealed    int  not null default 0,
+  -- Participantes de las llaves (potencia de 2, completada con bots).
+  bracket_size       int  not null default 0,
+  -- Ronda de llaves en curso: 1 = primera, log2(bracket_size) = final.
+  current_round      int  not null default 0,
   created_at         timestamptz not null default now(),
   updated_at         timestamptz not null default now()
 );
+
+alter table public.rooms drop constraint if exists rooms_phase_check;
+alter table public.rooms add constraint rooms_phase_check
+  check (phase in ('lobby','picking','bracket','finished'));
 
 create index if not exists rooms_code_idx on public.rooms (code);
 
@@ -102,6 +103,8 @@ create table if not exists public.players (
   room_id    uuid not null references public.rooms(id) on delete cascade,
   nickname   text not null check (char_length(nickname) between 1 and 20),
   token      text not null,
+  -- Relleno para completar las llaves; elige al azar.
+  is_bot     boolean not null default false,
   connected  boolean not null default true,
   joined_at  timestamptz not null default now(),
   unique (room_id, nickname)
@@ -115,11 +118,35 @@ create table if not exists public.picks (
   player_id     uuid not null references public.players(id) on delete cascade,
   category_slug text not null references public.categories(slug),
   pokemon_slug  text not null references public.pokemon(slug),
+  -- true = el jugador no eligio a tiempo (o es un bot) y se sorteo por el.
+  random        boolean not null default false,
   created_at    timestamptz not null default now(),
   primary key (room_id, player_id, category_slug)
 );
 
 create index if not exists picks_room_cat_idx on public.picks (room_id, category_slug);
+
+create table if not exists public.matches (
+  room_id       uuid not null references public.rooms(id) on delete cascade,
+  -- 1 = primera ronda; la final es log2(bracket_size).
+  round         int  not null check (round >= 1),
+  slot          int  not null check (slot >= 0),
+  player_a      uuid not null references public.players(id) on delete cascade,
+  player_b      uuid not null references public.players(id) on delete cascade,
+  -- Equipo de cada lado: las categorias sorteadas cuyas elecciones pelean. Con
+  -- 6 categorias o menos en la sala, ambos usan todas; si hay mas, cada jugador
+  -- recibe 6 al azar, independientes de las del rival.
+  team_a        text[] not null,
+  team_b        text[] not null,
+  -- Promedio del battle_score del equipo; gana el mayor.
+  avg_a         numeric not null,
+  avg_b         numeric not null,
+  -- El resultado se decide al crear el duelo y se oculta hasta revelarlo.
+  winner        uuid not null references public.players(id) on delete cascade,
+  tiebreak      boolean not null default false,
+  revealed      boolean not null default false,
+  primary key (room_id, round, slot)
+);
 
 -- ---------------------------------------------------------------------------
 -- Row Level Security
@@ -138,6 +165,7 @@ alter table public.rooms            enable row level security;
 alter table public.room_categories  enable row level security;
 alter table public.players          enable row level security;
 alter table public.picks            enable row level security;
+alter table public.matches          enable row level security;
 
 drop policy if exists "catalogo legible" on public.pokemon;
 create policy "catalogo legible" on public.pokemon for select using (true);
@@ -157,7 +185,8 @@ create policy "categorias de sala legibles" on public.room_categories for select
 drop policy if exists "jugadores legibles" on public.players;
 create policy "jugadores legibles" on public.players for select using (true);
 
--- Sin politica de select: `picks` solo es accesible con la service role key.
+-- Sin politica de select: `picks` y `matches` solo son accesibles con la
+-- service role key. Revelarian elecciones y ganadores antes de tiempo.
 
 -- Las filas de rooms y players son legibles, pero sus credenciales no: con
 -- `host_token` o `players.token` cualquiera podria suplantar al anfitrion o a
@@ -165,11 +194,19 @@ create policy "jugadores legibles" on public.players for select using (true);
 -- Realtime respeta estos permisos y omite las columnas no concedidas.
 revoke select on public.rooms   from anon, authenticated;
 revoke select on public.players from anon, authenticated;
-grant select (id, code, host_name, phase, current_position, battle_rounds,
-              battle_categories, battle_revealed, created_at, updated_at)
+grant select (id, code, host_name, phase, current_position, bracket_size,
+              current_round, created_at, updated_at)
   on public.rooms to anon, authenticated;
-grant select (id, room_id, nickname, connected, joined_at)
+grant select (id, room_id, nickname, is_bot, connected, joined_at)
   on public.players to anon, authenticated;
+
+-- El puntaje competitivo tampoco es legible: con la clave anonima, que es
+-- publica, bastaria una peticion para saber que Pokemon elegir.
+revoke select on public.pokemon from anon, authenticated;
+grant select (slug, dex, name, form, type1, type2, ability1, ability_hidden,
+              hp, attack, defense, sp_atk, sp_def, speed, total_stats,
+              legendary, mythical, generation, profile, dual_type, sprite_id)
+  on public.pokemon to anon, authenticated;
 
 -- Ninguna tabla tiene politica de insert/update/delete: las escrituras solo
 -- ocurren desde el servidor, que ignora RLS por usar la service role key.

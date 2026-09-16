@@ -4,7 +4,7 @@ import { HOST_HEADER, body, handle, normalizeCode } from "@/lib/http";
 export const dynamic = "force-dynamic";
 
 const ACTIONS: HostAction[] = [
-  "start", "reveal", "next", "draw_battle", "reveal_battle", "finish",
+  "start", "reveal", "next", "build_bracket", "reveal_match", "next_round", "finish",
 ];
 
 export async function POST(req: Request, ctx: { params: Promise<{ code: string }> }) {

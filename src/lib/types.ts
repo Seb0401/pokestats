@@ -1,9 +1,10 @@
-export type Phase = "lobby" | "picking" | "battle" | "finished";
+export type Phase = "lobby" | "picking" | "bracket" | "finished";
 export type CategoryState = "pending" | "open" | "revealed";
 export type PokemonForm = "base" | "mega" | "gmax" | "regional" | "alt";
 export type Profile = "fisico" | "especial" | "equilibrado";
 
-export interface Pokemon {
+/** Lo que cualquiera puede ver de un Pokemon: datos del juego, sin puntaje. */
+export interface PokemonPublic {
   slug: string;
   dex: number;
   name: string;
@@ -25,6 +26,10 @@ export interface Pokemon {
   profile: Profile;
   dual_type: boolean;
   sprite_id: number;
+}
+
+/** Puntaje competitivo: solo lo recibe el anfitrion. */
+export interface PokemonScore {
   usage_2024: number | null;
   usage_historic: number | null;
   usage_estimated: boolean;
@@ -34,6 +39,12 @@ export interface Pokemon {
   battle_score: number;
   rank: number;
 }
+
+export type Pokemon = PokemonPublic & Partial<PokemonScore>;
+export type ScoredPokemon = PokemonPublic & PokemonScore;
+
+export const hasScore = (p: Pokemon): p is ScoredPokemon =>
+  typeof p.battle_score === "number" || typeof p.battle_score === "string";
 
 export interface Category {
   slug: string;
@@ -47,6 +58,7 @@ export interface Category {
 export interface PlayerPublic {
   id: string;
   nickname: string;
+  is_bot: boolean;
   joined_at: string;
 }
 
@@ -62,29 +74,52 @@ export interface RevealedPick {
   player_id: string;
   nickname: string;
   pokemon: Pokemon;
+  /** Se sorteo porque el jugador no eligio a tiempo (o es un bot). */
+  random: boolean;
 }
 
-/** Resultado de una ronda de batalla, ya ordenado de mejor a peor. */
-export interface BattleStanding {
-  player_id: string;
-  nickname: string;
-  pokemon: Pokemon | null;
-  points: number;
-  won: boolean;
-}
-
-export interface BattleRound {
-  index: number;
+export interface TeamMember {
   category: Category;
-  revealed: boolean;
-  standings: BattleStanding[];
+  pokemon: Pokemon;
+  random: boolean;
 }
 
-export interface LeaderboardRow {
+export interface MatchSide {
   player_id: string;
   nickname: string;
-  total: number;
-  wins: number;
+  is_bot: boolean;
+  /** Equipo de hasta 6. Vacio mientras el duelo no se revele. */
+  team: TeamMember[];
+  /** Promedio del puntaje del equipo: solo lo recibe el anfitrion. */
+  average: number | null;
+}
+
+export interface Match {
+  round: number;
+  slot: number;
+  a: MatchSide;
+  b: MatchSide;
+  revealed: boolean;
+  /** null mientras el duelo no se revele. */
+  winner_id: string | null;
+  /** Empate exacto de promedios resuelto al azar. */
+  tiebreak: boolean;
+}
+
+export interface BracketRound {
+  round: number;
+  name: string;
+  matches: Match[];
+  /** Duelos que aun no existen porque la ronda anterior no termino. */
+  pending_slots: number;
+}
+
+export interface Bracket {
+  size: number;
+  total_rounds: number;
+  current_round: number;
+  rounds: BracketRound[];
+  champion: { player_id: string; nickname: string; is_bot: boolean } | null;
 }
 
 /** Lo que devuelve GET /api/rooms/[code]/state. */
@@ -95,8 +130,8 @@ export interface GameState {
     phase: Phase;
     host_name: string;
     current_position: number;
-    battle_rounds: number;
-    battle_revealed: number;
+    bracket_size: number;
+    current_round: number;
     updated_at: string;
   };
   isHost: boolean;
@@ -105,7 +140,6 @@ export interface GameState {
   rounds: RoundInfo[];
   /** Elecciones visibles: las reveladas por el anfitrion y siempre las propias. */
   picks: Record<string, RevealedPick[]>;
-  /** Solo presente cuando la partida esta en fase de batalla o terminada. */
-  battle: BattleRound[] | null;
-  leaderboard: LeaderboardRow[];
+  /** Presente desde que se arman las llaves. */
+  bracket: Bracket | null;
 }
