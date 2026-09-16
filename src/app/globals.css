@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink-950: #0a0b12;
+  --color-ink-900: #11131f;
+  --color-ink-850: #171a29;
+  --color-ink-800: #1e2233;
+  --color-ink-700: #2b3048;
+  --color-ink-600: #3d4463;
+  --color-ink-400: #7c8399;
+  --color-ink-300: #a4abbd;
+  --color-ink-200: #cdd2df;
+
+  --color-volt-400: #ffd84d;
+  --color-volt-500: #ffc400;
+  --color-volt-600: #e0a800;
+
+  --color-flare-400: #ff6b6b;
+  --color-flare-500: #ef4444;
+
+  --color-aqua-400: #4cc9f0;
+  --color-aqua-500: #22a7d8;
+
+  --color-mint-400: #4ade80;
+  --color-mint-500: #22c55e;
+
+  --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background:
+    radial-gradient(1100px 600px at 12% -8%, rgba(255, 196, 0, 0.09), transparent 60%),
+    radial-gradient(900px 520px at 92% 4%, rgba(76, 201, 240, 0.09), transparent 62%),
+    var(--color-ink-950);
+  color: var(--color-ink-200);
+  font-family: var(--font-body);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Tipos elementales: se usan como fondo de etiqueta y como acento de tarjeta. */
+@layer utilities {
+  .type-normal   { --type: #9fa19f; }
+  .type-fire     { --type: #e8590c; }
+  .type-water    { --type: #3b82f6; }
+  .type-electric { --type: #eab308; }
+  .type-grass    { --type: #16a34a; }
+  .type-ice      { --type: #38bdf8; }
+  .type-fighting { --type: #b91c1c; }
+  .type-poison   { --type: #9333ea; }
+  .type-ground   { --type: #b45309; }
+  .type-flying   { --type: #818cf8; }
+  .type-psychic  { --type: #ec4899; }
+  .type-bug      { --type: #65a30d; }
+  .type-rock     { --type: #a16207; }
+  .type-ghost    { --type: #6d28d9; }
+  .type-dragon   { --type: #4f46e5; }
+  .type-dark     { --type: #44403c; }
+  .type-steel    { --type: #64748b; }
+  .type-fairy    { --type: #f472b6; }
+}
+
+.card {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+  border: 1px solid var(--color-ink-700);
+  border-radius: 1rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  padding: 0.65rem 1.15rem;
+  transition: transform 0.12s ease, filter 0.12s ease, background-color 0.12s ease;
+  cursor: pointer;
+}
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary { background: var(--color-volt-500); color: #1a1500; }
+.btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+
+.btn-ghost {
+  background: var(--color-ink-800);
+  color: var(--color-ink-200);
+  border: 1px solid var(--color-ink-700);
+}
+.btn-ghost:hover:not(:disabled) { background: var(--color-ink-700); }
+
+.btn-danger { background: var(--color-flare-500); color: #fff; }
+.btn-danger:hover:not(:disabled) { filter: brightness(1.08); }
+
+.field {
+  width: 100%;
+  background: var(--color-ink-900);
+  border: 1px solid var(--color-ink-700);
+  border-radius: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  color: var(--color-ink-200);
+  outline: none;
+}
+.field:focus { border-color: var(--color-volt-500); }
+.field::placeholder { color: var(--color-ink-400); }
+
+/* Barra de progreso de una estadistica base. */
+.statbar {
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--color-ink-800);
+  overflow: hidden;
+}
+.statbar > i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-aqua-500), var(--color-volt-500));
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+.rise { animation: rise 0.32s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 196, 0, 0.45); }
+  70%  { box-shadow: 0 0 0 14px rgba(255, 196, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 196, 0, 0); }
+}
+.pulse { animation: pulse-ring 1.8s infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .pulse { animation: none; }
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-ink-700); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-ink-600); }
