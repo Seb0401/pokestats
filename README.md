@@ -74,10 +74,13 @@ el máximo, todos los empatados cobran la bonificación.
 
 1. Crea un proyecto en [supabase.com](https://supabase.com).
 2. En **SQL Editor**, ejecuta primero `supabase/schema.sql`.
-3. Después ejecuta `supabase/seed.sql` (~0.4 MB, 1303 Pokémon + 46 categorías).
-   Si el editor web se atraganta, usa `psql`:
+3. Carga el catálogo (1303 Pokémon + 46 categorías). Lo más cómodo, una vez
+   completado `.env.local` (paso 2):
    ```bash
-   psql "$DATABASE_URL" -f supabase/schema.sql
+   npm run seed:upload
+   ```
+   Alternativa: pegar `supabase/seed.sql` (~0.4 MB) en el SQL Editor, o con `psql`:
+   ```bash
    psql "$DATABASE_URL" -f supabase/seed.sql
    ```
 4. En **Database → Replication**, confirma que la publicación `supabase_realtime`
@@ -165,6 +168,11 @@ permite mostrar «4 de 5 ya eligieron» sin revelar *qué* eligieron—. Cualqui
 dispara un `GET /api/rooms/[code]/state`, y es el servidor, con la `service_role`
 key, quien decide qué puede ver cada quien: las categorías ya reveladas, más siempre
 la elección propia. Abrir las herramientas de desarrollo no adelanta nada.
+
+Las filas de `rooms` y `players` sí son legibles, pero **sus credenciales no**: el
+esquema retira el `select` de tabla y lo concede columna por columna, dejando fuera
+`rooms.host_token` y `players.token`. Sin eso, cualquiera con la clave anónima
+—que es pública por diseño— podría suplantar al anfitrión o a otro jugador.
 
 Las escrituras pasan todas por route handlers que validan el token de anfitrión o de
 jugador; ninguna tabla tiene política de `insert`/`update`/`delete`.

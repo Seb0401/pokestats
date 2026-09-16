@@ -8,7 +8,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { CATEGORIES } from "./categories.mjs";
 import {
   blendUsage, usageToScore, statComponents, statScore,
@@ -290,7 +290,8 @@ function buildSql(mons, categories, members) {
 
 // --- Main --------------------------------------------------------------
 
-async function main() {
+/** Lee el CSV y devuelve todo lo que va a la base, ya puntuado. */
+export async function buildData() {
   const mons = parseCsv(fs.readFileSync(CSV, "utf8")).map(normalize);
   console.log("Leidos " + mons.length + " registros.");
 
@@ -310,6 +311,27 @@ async function main() {
     cats.push({ ...c, poolSize: pool.length });
     for (const p of pool) members.push([c.slug, p.slug]);
   }
+  return { mons, cats, members };
+}
+
+/** Fila de `public.pokemon` tal como la espera el esquema. */
+export function pokemonRow(p) {
+  const r2 = (n) => (n == null ? null : Math.round(n * 10000) / 10000);
+  return {
+    slug: p.slug, dex: p.dex, name: p.name, form: p.form,
+    type1: p.type1, type2: p.type2, ability1: p.ability1, ability_hidden: p.abilityHidden,
+    hp: p.hp, attack: p.attack, defense: p.defense, sp_atk: p.spAtk, sp_def: p.spDef,
+    speed: p.speed, total_stats: p.total, legendary: p.legendary, mythical: p.mythical,
+    generation: p.generation, profile: p.profile, dual_type: p.dual, sprite_id: p.spriteId,
+    usage_2024: r2(p.usageBlend), usage_historic: r2(p.usageHistoric),
+    usage_estimated: p.usageEstimated, usage_score: r2(p.usageScore),
+    stat_score: r2(p.statScore), eligibility: p.eligibility,
+    battle_score: r2(p.score), rank: p.rank,
+  };
+}
+
+async function main() {
+  const { mons, cats, members } = await buildData();
 
   fs.mkdirSync(path.dirname(OUT_SQL), { recursive: true });
   fs.writeFileSync(OUT_SQL, buildSql(mons, cats, members), "utf8");
@@ -338,4 +360,6 @@ async function main() {
   }
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((e) => { console.error(e); process.exit(1); });
+}

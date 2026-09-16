@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "seed:build": "node scripts/build-seed.mjs",
-    "seed:check": "node scripts/check-scoring.mjs"
+    "seed:check": "node scripts/check-scoring.mjs",
+    "seed:upload": "node --env-file=.env.local scripts/upload-seed.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
