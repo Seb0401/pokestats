@@ -54,7 +54,11 @@ const GALAR_BIRDS = ["articuno-galar", "zapdos-galar", "moltres-galar"];
 /** Solo la forma por defecto de cada especie: sin Megas, Gigamax ni variantes. */
 const base = (fn) => (p) => p.canonical && fn(p);
 
-const starterSlot = (offsets) => (p) => STARTER_RANGES.some(([a]) => offsets.includes(p.dex - a));
+/** Las categorias de iniciales no admiten Megas ni Gigamax. */
+const noMegaGmax = (p) => p.form !== "mega" && p.form !== "gmax";
+
+const starterSlot = (offsets) => (p) =>
+  noMegaGmax(p) && STARTER_RANGES.some(([a]) => offsets.includes(p.dex - a));
 
 const BASE_CATEGORIES = [
   {
@@ -65,7 +69,7 @@ const BASE_CATEGORIES = [
   {
     slug: "inicial", name: "Inicial favorito", emoji: "\u{1F95A}",
     group: "Cl\u00e1sicas", description: "Cualquier miembro de las 27 l\u00edneas iniciales, de Kanto a Paldea, sin Megas ni Gigamax.",
-    match: (p) => p.form !== "mega" && p.form !== "gmax" && inRanges(...STARTER_RANGES)(p),
+    match: (p) => noMegaGmax(p) && inRanges(...STARTER_RANGES)(p),
   },
   {
     slug: "legendario", name: "Legendario favorito", emoji: "\u{1F451}",
@@ -92,22 +96,22 @@ const BASE_CATEGORIES = [
   },
   {
     slug: "inicial-planta", name: "Inicial de tipo Planta favorito", emoji: "",
-    group: "Iniciales", description: "Las nueve líneas iniciales de tipo Planta, de Bulbasaur a Sprigatito.",
+    group: "Iniciales", description: "Las nueve líneas iniciales de tipo Planta, de Bulbasaur a Sprigatito, sin Megas ni Gigamax.",
     match: starterSlot([0, 1, 2]),
   },
   {
     slug: "inicial-fuego", name: "Inicial de tipo Fuego favorito", emoji: "",
-    group: "Iniciales", description: "Las nueve líneas iniciales de tipo Fuego, de Charmander a Fuecoco.",
+    group: "Iniciales", description: "Las nueve líneas iniciales de tipo Fuego, de Charmander a Fuecoco, sin Megas ni Gigamax.",
     match: starterSlot([3, 4, 5]),
   },
   {
     slug: "inicial-agua", name: "Inicial de tipo Agua favorito", emoji: "",
-    group: "Iniciales", description: "Las nueve líneas iniciales de tipo Agua, de Squirtle a Quaxly.",
+    group: "Iniciales", description: "Las nueve líneas iniciales de tipo Agua, de Squirtle a Quaxly, sin Megas ni Gigamax.",
     match: starterSlot([6, 7, 8]),
   },
   {
     slug: "inicial-final", name: "Inicial en su etapa final favorito", emoji: "",
-    group: "Iniciales", description: "Solo la última evolución de cada inicial: Venusaur, Charizard, Blastoise, Typhlosion…",
+    group: "Iniciales", description: "Solo la última evolución de cada inicial, sin Megas ni Gigamax: Venusaur, Charizard, Typhlosion…",
     match: starterSlot([2, 5, 8]),
   },
   {
