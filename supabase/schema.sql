@@ -148,7 +148,6 @@ create policy "categorias legibles" on public.categories for select using (true)
 drop policy if exists "relaciones legibles" on public.category_pokemon;
 create policy "relaciones legibles" on public.category_pokemon for select using (true);
 
--- `host_token` queda fuera del alcance del cliente mediante la vista de abajo.
 drop policy if exists "salas legibles" on public.rooms;
 create policy "salas legibles" on public.rooms for select using (true);
 
@@ -159,6 +158,18 @@ drop policy if exists "jugadores legibles" on public.players;
 create policy "jugadores legibles" on public.players for select using (true);
 
 -- Sin politica de select: `picks` solo es accesible con la service role key.
+
+-- Las filas de rooms y players son legibles, pero sus credenciales no: con
+-- `host_token` o `players.token` cualquiera podria suplantar al anfitrion o a
+-- otro jugador. Se retira el select de tabla y se concede columna por columna.
+-- Realtime respeta estos permisos y omite las columnas no concedidas.
+revoke select on public.rooms   from anon, authenticated;
+revoke select on public.players from anon, authenticated;
+grant select (id, code, host_name, phase, current_position, battle_rounds,
+              battle_categories, battle_revealed, created_at, updated_at)
+  on public.rooms to anon, authenticated;
+grant select (id, room_id, nickname, connected, joined_at)
+  on public.players to anon, authenticated;
 
 -- Ninguna tabla tiene politica de insert/update/delete: las escrituras solo
 -- ocurren desde el servidor, que ignora RLS por usar la service role key.
@@ -184,7 +195,7 @@ end $$;
 
 -- `updated_at` automatico en rooms, para que cualquier cambio dispare un evento.
 create or replace function public.touch_room()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql set search_path = '' as $$
 begin
   new.updated_at = now();
   return new;
